@@ -42,13 +42,9 @@ def reactor_matrix(fill_color, background_color):
     reactor.append(background_row(2, fill_color, background_color))
     reactor.append(background_row(1, fill_color, background_color))
 
-    colored_row = [fill_color, fill_color, fill_color,
-                fill_color, fill_color, fill_color,
-                fill_color, fill_color, fill_color,
-                fill_color, fill_color, fill_color,
-                fill_color, fill_color, fill_color]
+    colored_row = [fill_color] * 15
     for i in range(9):
-        reactor.append(colored_row)
+        reactor.append(colored_row.copy())
     
     reactor.append(background_row(1, fill_color, background_color))
     reactor.append(background_row(2, fill_color, background_color))
@@ -57,22 +53,16 @@ def reactor_matrix(fill_color, background_color):
     return reactor
 
 def rod_matrix(reactor_matrix, firstRodXY):
-    rod_matrix = [firstRodXY]
-    x = firstRodXY[0]
-    x_init = 0
-    if(x % 2 != 0):
-        x_init = 1
-    y = firstRodXY[1]
+    rod_matrix = []
+    start_x = 0
+    if(firstRodXY[0] % 2 == 1): start_x = 1
+    start_y = firstRodXY[1]
 
-    while(y < 15):
-        x_new = x + 2
-        if(x_new < 15):
-            x = x_new
-            if(reactor_matrix[y][x] != background_color):
-                rod_matrix.append((x, y));
-        else:
-            x = x_init
-            y += 2
+    # Loop through rows (y) and columns (x) up to the grid boundary, skipping by 2
+    for y in range(start_y, 15, 2):
+        for x in range(start_x, 15, 2):
+            if reactor_matrix[y][x] != background_color:
+                rod_matrix.append((x, y))
     
     return rod_matrix
 
