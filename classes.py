@@ -4,7 +4,7 @@ class FuelCell:
 
     type = "FUEL"
 
-    def __init__(self, positionXY, fuel_temp = 25.0, mod_temp = 25.0, fission_matrix=None):
+    def __init__(self, positionXY, fuel_temp = 25.0, mod_temp = 25.0, fission_matrix=[]):
         self.positionXY = positionXY
         self.fuel_temp = fuel_temp
         self.mod_temp = mod_temp
@@ -15,7 +15,7 @@ class FuelCell:
     def getType(self):
         return self.type
     
-    def getPositionXY(self):
+    def getPositionXY(self): -> (int, int)
         return self.positionXY
     
     def setTemperature(self, temperature):
@@ -25,10 +25,13 @@ class FuelCell:
         return self.temperature
     
     def setFissionRate(self, fission_rate):
-        self.fission_rate =- fission_rate
+        self.fission_rate = fission_rate
     
-    def getFissionRate(self):
+    def getFissionRate(self): -> [[FuelCell, float]]
         return self.fission_rate
+    
+    def appendFissionMatrix(self, to_append):
+        self.fission_matrix.append(to_append)
     
     def setFissionMatrix(self, fission_matrix):
         self.fission_matrix = fission_matrix
@@ -79,13 +82,20 @@ class Reactor:
     rho_baseline = 0.0       # Baseline reactivity
     beta_i = (0.00021, 0.00141, 0.00127, 0.00255, 0.00074, 0.00027)
     lambda_i = (0.0124, 0.0305, 0.1110, 0.3010, 1.1400, 3.0100)
+    precursors = [0.0] * 6
 
     def __init__(self, dt=0.05):
         self.fuel_rods = []
         self.control_rods = []
         self.dt = dt  # Timestep, seconds
 
-        self.fission_relations = []
+    def setTimestep(self, dt):
+        self.dt = dt
+    
+    def setFuelRods(self, fuel_rods):
+        self.fuel_rods = fuel_rods
+
+        fission_relations = []
         with open("fission_coupling_table_2.csv", mode="r", newline="", encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
@@ -94,11 +104,14 @@ class Reactor:
                     new_row.append(float(i))
                 fission_relations.append(new_row)
 
-    def setTimestep(self, dt):
-        self.dt = dt
-    
-    def setFuelRods(self, fuel_rods):
-        self.fuel_rods = fuel_rods
+        for i in fission_relations:
+            source_row = i[4]
+            source_col = i[5]
+            match = None
+            for fuel_rod in self.fuel_rods:
+                if(fuel_rod.getPosition() == int((source_col, source_row))):
+                    match = fuel_rod
+            match.appendFissionMatrix
     
     def getFuelRods(self):
         return self.fuel_rods
